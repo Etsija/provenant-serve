@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react'
 
 import { getJob, getJobResult } from '@/api/provenantApi'
+import { ScanResultViewer } from '@/components/ScanResultViewer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -109,13 +110,17 @@ export function JobStatus({ jobId }: JobStatusProps) {
         ) : null}
 
         {resultQuery.data ? (
-          <Alert>
-            <CheckCircle2 className="size-4" aria-hidden="true" />
-            <AlertTitle>Result fetched</AlertTitle>
-            <AlertDescription>
-              The scan result is available and ready for the result viewer.
-            </AlertDescription>
-          </Alert>
+          <div className="space-y-4">
+            <Alert>
+              <CheckCircle2 className="size-4" aria-hidden="true" />
+              <AlertTitle>Result fetched</AlertTitle>
+              <AlertDescription>
+                The scan result is available below.
+              </AlertDescription>
+            </Alert>
+
+            <ScanResultViewer result={resultQuery.data} />
+          </div>
         ) : null}
       </CardContent>
     </Card>
