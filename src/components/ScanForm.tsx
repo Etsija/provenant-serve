@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { JobStatus } from '@/components/JobStatus'
 import { Label } from '@/components/ui/label'
 
 type ScanOptionKey =
@@ -192,13 +193,17 @@ export function ScanForm() {
         ) : null}
 
         {scanMutation.data ? (
-          <Alert className="mt-6">
-            <AlertTitle>Scan accepted</AlertTitle>
-            <AlertDescription>
-              Job <code>{scanMutation.data.job_id}</code> was accepted with
-              state <code>{scanMutation.data.state}</code>.
-            </AlertDescription>
-          </Alert>
+          <div className="mt-6 space-y-6">
+            <Alert>
+              <AlertTitle>Scan accepted</AlertTitle>
+              <AlertDescription>
+                Job <code>{scanMutation.data.job_id}</code> was accepted with
+                state <code>{scanMutation.data.state}</code>.
+              </AlertDescription>
+            </Alert>
+
+            <JobStatus jobId={scanMutation.data.job_id} />
+          </div>
         ) : null}
       </CardContent>
     </Card>
