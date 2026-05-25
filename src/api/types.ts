@@ -18,7 +18,7 @@ export type ScanInput =
   | {
       type: 'repository'
       url: string
-      ref?: string
+      ref: string
     }
   | {
       type: 'url'
