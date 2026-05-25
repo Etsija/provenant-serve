@@ -1,4 +1,5 @@
 import { HealthPanel } from '@/components/HealthPanel'
+import { ScanForm } from '@/components/ScanForm'
 
 export function App() {
   return (
@@ -22,6 +23,7 @@ export function App() {
         </section>
 
         <HealthPanel />
+        <ScanForm />
       </div>
     </main>
   )

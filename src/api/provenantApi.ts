@@ -10,7 +10,7 @@ import type {
 
 const API_BASE_URL = '/api'
 
-class ProvenantApiError extends Error {
+export class ProvenantApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
@@ -87,4 +87,43 @@ export function getJobResult(jobId: string) {
   return requestJson<ScanResult>(`/v1/jobs/${encodeURIComponent(jobId)}/result`)
 }
 
-export { ProvenantApiError }
+export function getErrorMessage(error: unknown) {
+  if (error instanceof ProvenantApiError) {
+    return formatApiError(error)
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return 'Unknown error'
+}
+
+function formatApiError(error: ProvenantApiError) {
+  const bodyMessage = extractResponseMessage(error.responseBody)
+
+  if (bodyMessage) {
+    return `${error.message}: ${bodyMessage}`
+  }
+
+  return error.message
+}
+
+function extractResponseMessage(responseBody: unknown): string | undefined {
+  if (typeof responseBody === 'string') {
+    return responseBody
+  }
+
+  if (!responseBody || typeof responseBody !== 'object') {
+    return undefined
+  }
+
+  const record = responseBody as Record<string, unknown>
+  const message = record.message ?? record.error ?? record.detail
+
+  if (typeof message === 'string') {
+    return message
+  }
+
+  return JSON.stringify(responseBody)
+}
