@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { indicatorColors, getServiceStatusTone } from '@/lib/colors'
 
 type ServiceCheck = {
   label: string
@@ -87,7 +88,7 @@ export function HealthPanel() {
           </Alert>
         ) : null}
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {checks.map((check) => (
             <div
               key={check.label}
@@ -109,9 +110,11 @@ export function HealthPanel() {
 }
 
 function StatusBadge({ status }: { status: ServiceCheck['status'] }) {
+  const tone = getServiceStatusTone(status)
+
   if (status === 'loading') {
     return (
-      <Badge variant="secondary">
+      <Badge variant="outline" className={indicatorColors[tone].badge}>
         <Activity className="size-3" aria-hidden="true" />
         Checking
       </Badge>
@@ -119,11 +122,15 @@ function StatusBadge({ status }: { status: ServiceCheck['status'] }) {
   }
 
   if (status === 'error') {
-    return <Badge variant="destructive">Error</Badge>
+    return (
+      <Badge variant="outline" className={indicatorColors[tone].badge}>
+        Error
+      </Badge>
+    )
   }
 
   return (
-    <Badge variant="outline">
+    <Badge variant="outline" className={indicatorColors[tone].badge}>
       <ShieldCheck className="size-3" aria-hidden="true" />
       OK
     </Badge>

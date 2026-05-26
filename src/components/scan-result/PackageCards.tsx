@@ -76,7 +76,9 @@ function PackageCard({ row }: { row: ScanPackageRow }) {
           <code className="break-all">{row.sourceFile}</code>
         </div>
         <div className="min-w-0 shrink-0 sm:text-right">
-          <span className="font-medium text-foreground">License: </span>
+          <span className="font-medium text-foreground">
+            Declared license:{' '}
+          </span>
           <LicenseBadge license={row.declaredLicense} />
         </div>
       </div>

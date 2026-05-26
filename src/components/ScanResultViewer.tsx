@@ -44,7 +44,7 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
           Scan result
         </CardTitle>
         <CardDescription>
-          Minimal summary and raw ScanCode-compatible JSON output.
+          All relevant findings and raw ScanCode-compatible JSON output.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

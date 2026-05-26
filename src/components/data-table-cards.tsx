@@ -62,20 +62,20 @@ export function DataTableCards<TData, TValue>({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-end border-b pb-3">
+      <div className="flex items-center justify-end border-b pb-1">
         <DataTableCardsSort columns={table.getAllColumns()} />
       </div>
 
       {rows.length > 0 ? (
         <div className="grid gap-3">
           {rows.map((row) => (
-            <div key={row.id} className="rounded-lg border bg-background p-4">
+            <div key={row.id} className="rounded-lg border bg-card p-4">
               {renderCard(row.original)}
             </div>
           ))}
         </div>
       ) : (
-        <div className="rounded-lg border bg-background p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
           {emptyMessage}
         </div>
       )}

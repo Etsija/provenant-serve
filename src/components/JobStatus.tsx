@@ -3,7 +3,7 @@ import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react'
 import { useEffect } from 'react'
 
 import { getJob, getJobResult } from '@/api/provenantApi'
-import type { ScanResult } from '@/api/types'
+import type { ScanJobState, ScanResult } from '@/api/types'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -13,6 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  getBooleanStatusTone,
+  getScanJobStateTone,
+  indicatorColors,
+} from '@/lib/colors'
+import { cn } from '@/lib/utils'
 
 type JobStatusProps = {
   jobId: string
@@ -71,12 +77,20 @@ export function JobStatus({ jobId, onResultFetched }: JobStatusProps) {
 
         <div className="grid gap-3 sm:grid-cols-3">
           <StatusTile label="State">
-            <Badge variant={state === 'failed' ? 'destructive' : 'outline'}>
+            <Badge
+              variant="outline"
+              className={indicatorColors[getScanJobStateTone(state)].badge}
+            >
               {state}
             </Badge>
           </StatusTile>
           <StatusTile label="Result ready">
-            <Badge variant={resultReady ? 'default' : 'secondary'}>
+            <Badge
+              variant="outline"
+              className={
+                indicatorColors[getBooleanStatusTone(resultReady)].badge
+              }
+            >
               {resultReady ? 'Yes' : 'No'}
             </Badge>
           </StatusTile>
@@ -146,20 +160,25 @@ function StatusTile({
   )
 }
 
-function StateIcon({ state }: { state: string }) {
+function StateIcon({ state }: { state: ScanJobState | 'loading' }) {
+  const tone = getScanJobStateTone(state)
+  const className = cn(
+    'size-5',
+    state === 'running' || state === 'loading' ? 'animate-spin' : undefined,
+    indicatorColors[tone].icon,
+  )
+
   if (state === 'succeeded') {
-    return <CheckCircle2 className="size-5 text-green-600" aria-hidden="true" />
+    return <CheckCircle2 className={className} aria-hidden="true" />
   }
 
   if (state === 'failed') {
-    return <XCircle className="size-5 text-destructive" aria-hidden="true" />
+    return <XCircle className={className} aria-hidden="true" />
   }
 
   if (state === 'pending') {
-    return <Clock className="size-5 text-muted-foreground" aria-hidden="true" />
+    return <Clock className={className} aria-hidden="true" />
   }
 
-  return (
-    <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" />
-  )
+  return <Loader2 className={className} aria-hidden="true" />
 }
