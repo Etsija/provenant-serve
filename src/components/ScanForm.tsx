@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { Loader2, Play } from 'lucide-react'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 
 import { getErrorMessage, submitAsyncScan } from '@/api/provenantApi'
 import type { ScanOptions, ScanRequest } from '@/api/types'
@@ -16,6 +16,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { getPersistedScanStateSize } from '@/helpers/persisted-scan-state'
+import { useScanStore } from '@/stores/scan-store'
 
 type ScanOptionKey =
   | 'detectPackages'
@@ -72,9 +74,15 @@ type ScanFormProps = {
 }
 
 export function ScanForm({ onJobAccepted }: ScanFormProps) {
-  const [repositoryUrl, setRepositoryUrl] = useState('')
-  const [repositoryRef, setRepositoryRef] = useState('main')
+  const repositoryUrl = useScanStore((state) => state.repositoryUrl)
+  const repositoryRef = useScanStore((state) => state.repositoryRef)
+  const setRepositoryUrl = useScanStore((state) => state.setRepositoryUrl)
+  const setRepositoryRef = useScanStore((state) => state.setRepositoryRef)
+  const clearScan = useScanStore((state) => state.clearScan)
+  const jobId = useScanStore((state) => state.jobId)
+  const scanResult = useScanStore((state) => state.scanResult)
   const [options, setOptions] = useState<ScanOptionState>(defaultOptions)
+  const [persistedSize, setPersistedSize] = useState<number>()
 
   const scanMutation = useMutation({
     mutationFn: submitAsyncScan,
@@ -82,6 +90,26 @@ export function ScanForm({ onJobAccepted }: ScanFormProps) {
       onJobAccepted?.(data.job_id)
     },
   })
+
+  useEffect(() => {
+    let cancelled = false
+
+    getPersistedScanStateSize()
+      .then((size) => {
+        if (!cancelled) {
+          setPersistedSize(size)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPersistedSize(undefined)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [jobId, repositoryRef, repositoryUrl, scanResult])
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -181,6 +209,14 @@ export function ScanForm({ onJobAccepted }: ScanFormProps) {
               )}
               Submit async scan
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={clearScan}
+            >
+              Clear {formatBytes(persistedSize)} of persisted scan data
+            </Button>
           </div>
         </form>
 
@@ -204,6 +240,23 @@ export function ScanForm({ onJobAccepted }: ScanFormProps) {
       </CardContent>
     </Card>
   )
+}
+
+function formatBytes(bytes: number | undefined) {
+  if (bytes === undefined) {
+    return 'Unknown'
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+
+  const kibibytes = bytes / 1024
+  if (kibibytes < 1024) {
+    return `${kibibytes.toFixed(1)} KiB`
+  }
+
+  return `${(kibibytes / 1024).toFixed(1)} MiB`
 }
 
 function buildScanOptions(options: ScanOptionState): ScanOptions {

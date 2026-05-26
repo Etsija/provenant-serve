@@ -1,19 +1,14 @@
-import { useCallback, useState } from 'react'
-
-import type { ScanResult } from '@/api/types'
 import { HealthPanel } from '@/components/HealthPanel'
 import { JobStatus } from '@/components/JobStatus'
 import { ScanForm } from '@/components/ScanForm'
 import { ScanResultViewer } from '@/components/ScanResultViewer'
+import { useScanStore } from '@/stores/scan-store'
 
 export function App() {
-  const [jobId, setJobId] = useState<string>()
-  const [scanResult, setScanResult] = useState<ScanResult>()
-
-  const handleJobAccepted = useCallback((acceptedJobId: string) => {
-    setJobId(acceptedJobId)
-    setScanResult(undefined)
-  }, [])
+  const jobId = useScanStore((state) => state.jobId)
+  const scanResult = useScanStore((state) => state.scanResult)
+  const acceptJob = useScanStore((state) => state.acceptJob)
+  const setScanResult = useScanStore((state) => state.setScanResult)
 
   return (
     <main className="min-h-screen bg-muted/30 px-6 py-10 sm:px-8">
@@ -36,7 +31,7 @@ export function App() {
         </section>
 
         <HealthPanel />
-        <ScanForm onJobAccepted={handleJobAccepted} />
+        <ScanForm onJobAccepted={acceptJob} />
         {jobId ? (
           <JobStatus jobId={jobId} onResultFetched={setScanResult} />
         ) : null}
