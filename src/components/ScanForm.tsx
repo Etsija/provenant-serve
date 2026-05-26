@@ -5,7 +5,6 @@ import { FormEvent, useState } from 'react'
 import { getErrorMessage, submitAsyncScan } from '@/api/provenantApi'
 import type { ScanOptions, ScanRequest } from '@/api/types'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -176,10 +175,6 @@ export function ScanForm() {
               )}
               Submit async scan
             </Button>
-
-            {scanMutation.data ? (
-              <Badge variant="outline">State: {scanMutation.data.state}</Badge>
-            ) : null}
           </div>
         </form>
 
@@ -197,8 +192,7 @@ export function ScanForm() {
             <Alert>
               <AlertTitle>Scan accepted</AlertTitle>
               <AlertDescription>
-                Job <code>{scanMutation.data.job_id}</code> was accepted with
-                state <code>{scanMutation.data.state}</code>.
+                Job <code>{scanMutation.data.job_id}</code> was accepted.
               </AlertDescription>
             </Alert>
 
