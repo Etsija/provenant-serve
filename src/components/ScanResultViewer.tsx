@@ -1,6 +1,20 @@
-import { Clock, FileJson, Package, Scale } from 'lucide-react'
+import {
+  Clock,
+  Copyright,
+  FileJson,
+  Link,
+  Mail,
+  Package,
+  Scale,
+} from 'lucide-react'
 
 import type { ScanResult } from '@/api/types'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import {
@@ -19,13 +33,24 @@ type ResultSummary = {
   filesCount?: number
   packagesCount?: number
   licensesCount?: number
+  copyrightsCount?: number
+  urlsCount?: number
+  emailsCount?: number
   startTime?: string
   endTime?: string
   duration?: string
 }
 
+type ResultAccordion = {
+  key: string
+  label: string
+  count: number
+  icon: React.ReactNode
+}
+
 export function ScanResultViewer({ result }: ScanResultViewerProps) {
   const summary = summarizeResult(result)
+  const accordions = getResultAccordions(summary)
 
   return (
     <Card>
@@ -60,23 +85,30 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <SummaryTile
-            icon={<FileJson className="size-4" aria-hidden="true" />}
-            label="Files"
-            value={summary.filesCount}
-          />
-          <SummaryTile
-            icon={<Package className="size-4" aria-hidden="true" />}
-            label="Packages"
-            value={summary.packagesCount}
-          />
-          <SummaryTile
-            icon={<Scale className="size-4" aria-hidden="true" />}
-            label="Licenses"
-            value={summary.licensesCount}
-          />
-        </div>
+        {accordions.length > 0 ? (
+          <Accordion type="multiple" className="gap-3">
+            {accordions.map((accordion) => (
+              <AccordionItem
+                key={accordion.key}
+                value={accordion.key}
+                className="rounded-lg border bg-background px-4"
+              >
+                <AccordionTrigger className="py-4 hover:no-underline">
+                  <span className="flex w-full items-center gap-3 pr-4">
+                    {accordion.icon}
+                    <span>{accordion.label}</span>
+                    <span className="ml-auto font-semibold">
+                      {accordion.count}
+                    </span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Item list coming next.
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : null}
 
         <details className="group rounded-lg border bg-background">
           <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium select-none">
@@ -129,10 +161,72 @@ function summarizeResult(result: ScanResult): ResultSummary {
     filesCount: files?.length,
     packagesCount: packages?.length,
     licensesCount: countLicenses(result, files),
+    copyrightsCount: countNestedFileItems(files, 'copyrights'),
+    urlsCount: countNestedFileItems(files, 'urls'),
+    emailsCount: countNestedFileItems(files, 'emails'),
     startTime: formatLocalTime(startDate),
     endTime: formatLocalTime(endDate),
     duration: formatDuration(getDurationSeconds(header, startDate, endDate)),
   }
+}
+
+function getResultAccordions(summary: ResultSummary): ResultAccordion[] {
+  return [
+    {
+      key: 'packages',
+      label: 'Packages',
+      count: summary.packagesCount ?? 0,
+      icon: <Package className="size-4" aria-hidden="true" />,
+    },
+    {
+      key: 'files',
+      label: 'Files',
+      count: summary.filesCount ?? 0,
+      icon: <FileJson className="size-4" aria-hidden="true" />,
+    },
+    {
+      key: 'licenses',
+      label: 'Licenses',
+      count: summary.licensesCount ?? 0,
+      icon: <Scale className="size-4" aria-hidden="true" />,
+    },
+    {
+      key: 'copyrights',
+      label: 'Copyrights',
+      count: summary.copyrightsCount ?? 0,
+      icon: <Copyright className="size-4" aria-hidden="true" />,
+    },
+    {
+      key: 'urls',
+      label: 'URLs',
+      count: summary.urlsCount ?? 0,
+      icon: <Link className="size-4" aria-hidden="true" />,
+    },
+    {
+      key: 'emails',
+      label: 'Emails',
+      count: summary.emailsCount ?? 0,
+      icon: <Mail className="size-4" aria-hidden="true" />,
+    },
+  ].filter((accordion) => accordion.count > 0)
+}
+
+function countNestedFileItems(
+  files: unknown[] | undefined,
+  key: string,
+): number | undefined {
+  if (!files) {
+    return undefined
+  }
+
+  return files.reduce<number>((count, file) => {
+    if (!file || typeof file !== 'object') {
+      return count
+    }
+
+    const items = getArray(file as Record<string, unknown>, key)
+    return count + (items?.length ?? 0)
+  }, 0)
 }
 
 function countLicenses(result: ScanResult, files?: unknown[]) {
