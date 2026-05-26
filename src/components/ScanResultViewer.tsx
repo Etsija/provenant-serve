@@ -1,7 +1,8 @@
-import { FileJson, Package, Scale } from 'lucide-react'
+import { Clock, FileJson, Package, Scale } from 'lucide-react'
 
 import type { ScanResult } from '@/api/types'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import {
   Card,
   CardContent,
@@ -18,6 +19,9 @@ type ResultSummary = {
   filesCount?: number
   packagesCount?: number
   licensesCount?: number
+  startTime?: string
+  endTime?: string
+  duration?: string
 }
 
 export function ScanResultViewer({ result }: ScanResultViewerProps) {
@@ -35,6 +39,27 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <SummaryTile
+            icon={<Clock className="size-4" aria-hidden="true" />}
+            label="Start time"
+            value={summary.startTime}
+            valueClassName="text-base"
+          />
+          <SummaryTile
+            icon={<Clock className="size-4" aria-hidden="true" />}
+            label="End time"
+            value={summary.endTime}
+            valueClassName="text-base"
+          />
+          <SummaryTile
+            icon={<Clock className="size-4" aria-hidden="true" />}
+            label="Duration"
+            value={summary.duration}
+            valueClassName="text-base"
+          />
+        </div>
+
         <div className="grid gap-3 sm:grid-cols-3">
           <SummaryTile
             icon={<FileJson className="size-4" aria-hidden="true" />}
@@ -73,10 +98,12 @@ function SummaryTile({
   icon,
   label,
   value,
+  valueClassName,
 }: {
   icon: React.ReactNode
   label: string
-  value?: number
+  value?: number | string
+  valueClassName?: string
 }) {
   return (
     <div className="rounded-lg border bg-background p-3">
@@ -84,7 +111,9 @@ function SummaryTile({
         {icon}
         {label}
       </p>
-      <p className="text-2xl font-semibold">{value ?? 'Unknown'}</p>
+      <p className={cn('text-2xl font-semibold', valueClassName)}>
+        {value ?? 'Unknown'}
+      </p>
     </div>
   )
 }
@@ -92,11 +121,17 @@ function SummaryTile({
 function summarizeResult(result: ScanResult): ResultSummary {
   const files = getArray(result, 'files')
   const packages = getArray(result, 'packages')
+  const header = getFirstHeader(result)
+  const startDate = parseScanTimestamp(getString(header, 'start_timestamp'))
+  const endDate = parseScanTimestamp(getString(header, 'end_timestamp'))
 
   return {
     filesCount: files?.length,
     packagesCount: packages?.length,
     licensesCount: countLicenses(result, files),
+    startTime: formatLocalTime(startDate),
+    endTime: formatLocalTime(endDate),
+    duration: formatDuration(getDurationSeconds(header, startDate, endDate)),
   }
 }
 
@@ -144,6 +179,101 @@ function addLicenseExpression(licenseKeys: Set<string>, value: unknown) {
   if (typeof value === 'string' && value.length > 0 && value !== 'unknown') {
     licenseKeys.add(value)
   }
+}
+
+function getFirstHeader(result: ScanResult) {
+  const headers = getArray(result, 'headers')
+  const header = headers?.[0]
+
+  if (header && typeof header === 'object') {
+    return header as Record<string, unknown>
+  }
+
+  return undefined
+}
+
+function getDurationSeconds(
+  header: Record<string, unknown> | undefined,
+  startDate: Date | undefined,
+  endDate: Date | undefined,
+) {
+  const duration = header?.duration
+
+  if (typeof duration === 'number') {
+    return duration
+  }
+
+  if (typeof duration === 'string') {
+    const parsedDuration = Number(duration)
+    return Number.isFinite(parsedDuration) ? parsedDuration : undefined
+  }
+
+  if (startDate && endDate) {
+    return (endDate.getTime() - startDate.getTime()) / 1000
+  }
+
+  return undefined
+}
+
+function parseScanTimestamp(value: string | undefined) {
+  if (!value) {
+    return undefined
+  }
+
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})(\d{2})(?:\.(\d+))?$/.exec(value)
+
+  if (match) {
+    const [, year, month, day, hour, minute, second, fraction = '0'] = match
+    return new Date(
+      Date.UTC(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second),
+        Number(fraction.padEnd(3, '0').slice(0, 3)),
+      ),
+    )
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date
+}
+
+function formatLocalTime(date: Date | undefined) {
+  if (!date) {
+    return undefined
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  }).format(date)
+}
+
+function formatDuration(durationSeconds: number | undefined) {
+  if (durationSeconds === undefined || !Number.isFinite(durationSeconds)) {
+    return undefined
+  }
+
+  const totalSeconds = Math.max(0, Math.round(durationSeconds))
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  return [hours, minutes, seconds]
+    .map((part) => part.toString().padStart(2, '0'))
+    .join(':')
+}
+
+function getString(
+  record: Record<string, unknown> | undefined,
+  key: string,
+): string | undefined {
+  const value = record?.[key]
+  return typeof value === 'string' ? value : undefined
 }
 
 function getArray(record: Record<string, unknown>, key: string) {
