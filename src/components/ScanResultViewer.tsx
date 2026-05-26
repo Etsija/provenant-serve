@@ -1,3 +1,4 @@
+import type { ColumnDef } from '@tanstack/react-table'
 import {
   Clock,
   Copyright,
@@ -7,6 +8,7 @@ import {
   Package,
   Scale,
 } from 'lucide-react'
+import { useMemo } from 'react'
 
 import type { ScanResult } from '@/api/types'
 import {
@@ -16,6 +18,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
+import { DataTable, DataTableSortableHeader } from '@/components/data-table'
 import { cn } from '@/lib/utils'
 import {
   Card,
@@ -48,7 +51,21 @@ type ResultAccordion = {
   icon: React.ReactNode
 }
 
+type ScanFindingRow = {
+  value: string
+  file: string
+  lines: string
+}
+
 export function ScanResultViewer({ result }: ScanResultViewerProps) {
+  const emailRows = useMemo(
+    () => getNestedFindingRows(result, 'emails', 'email'),
+    [result],
+  )
+  const urlRows = useMemo(
+    () => getNestedFindingRows(result, 'urls', 'url'),
+    [result],
+  )
   const summary = summarizeResult(result)
   const accordions = getResultAccordions(summary)
 
@@ -102,8 +119,16 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
                     </span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  Item list coming next.
+                <AccordionContent>
+                  {accordion.key === 'urls' ? (
+                    <DataTable columns={urlColumns} data={urlRows} />
+                  ) : accordion.key === 'emails' ? (
+                    <DataTable columns={emailColumns} data={emailRows} />
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Item list coming next.
+                    </p>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -148,6 +173,40 @@ function SummaryTile({
       </p>
     </div>
   )
+}
+
+const emailColumns = createFindingColumns('Email')
+const urlColumns = createFindingColumns('URL')
+
+function createFindingColumns(
+  label: 'Email' | 'URL',
+): ColumnDef<ScanFindingRow>[] {
+  return [
+    {
+      accessorKey: 'value',
+      header: ({ column }) => (
+        <DataTableSortableHeader column={column} title={label} />
+      ),
+      cell: ({ row }) => (
+        <code className="whitespace-normal break-all">
+          {row.original.value}
+        </code>
+      ),
+    },
+    {
+      accessorKey: 'file',
+      header: ({ column }) => (
+        <DataTableSortableHeader column={column} title="File" />
+      ),
+      cell: ({ row }) => (
+        <code className="whitespace-normal break-all">{row.original.file}</code>
+      ),
+    },
+    {
+      accessorKey: 'lines',
+      header: 'Lines',
+    },
+  ]
 }
 
 function summarizeResult(result: ScanResult): ResultSummary {
@@ -209,6 +268,56 @@ function getResultAccordions(summary: ResultSummary): ResultAccordion[] {
       icon: <Mail className="size-4" aria-hidden="true" />,
     },
   ].filter((accordion) => accordion.count > 0)
+}
+
+function getNestedFindingRows(
+  result: ScanResult,
+  collectionKey: string,
+  valueKey: string,
+): ScanFindingRow[] {
+  const files = getArray(result, 'files')
+
+  if (!files) {
+    return []
+  }
+
+  return files.flatMap((file) => {
+    if (!file || typeof file !== 'object') {
+      return []
+    }
+
+    const fileRecord = file as Record<string, unknown>
+    const path = getString(fileRecord, 'path') ?? 'Unknown'
+    const findings = getArray(fileRecord, collectionKey)
+
+    if (!findings) {
+      return []
+    }
+
+    return findings.flatMap((finding) => {
+      if (!finding || typeof finding !== 'object') {
+        return []
+      }
+
+      const findingRecord = finding as Record<string, unknown>
+      const value = getString(findingRecord, valueKey)
+
+      if (!value) {
+        return []
+      }
+
+      return [
+        {
+          value,
+          file: path,
+          lines: formatLineRange(
+            getNumber(findingRecord, 'start_line'),
+            getNumber(findingRecord, 'end_line'),
+          ),
+        },
+      ]
+    })
+  })
 }
 
 function countNestedFileItems(
@@ -362,12 +471,35 @@ function formatDuration(durationSeconds: number | undefined) {
     .join(':')
 }
 
+function formatLineRange(
+  startLine: number | undefined,
+  endLine: number | undefined,
+) {
+  if (startLine === undefined) {
+    return 'Unknown'
+  }
+
+  if (endLine === undefined || endLine === startLine) {
+    return startLine.toString()
+  }
+
+  return `${startLine}-${endLine}`
+}
+
 function getString(
   record: Record<string, unknown> | undefined,
   key: string,
 ): string | undefined {
   const value = record?.[key]
   return typeof value === 'string' ? value : undefined
+}
+
+function getNumber(
+  record: Record<string, unknown> | undefined,
+  key: string,
+): number | undefined {
+  const value = record?.[key]
+  return typeof value === 'number' ? value : undefined
 }
 
 function getArray(record: Record<string, unknown>, key: string) {
