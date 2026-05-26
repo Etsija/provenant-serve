@@ -15,6 +15,7 @@ import {
 import {
   getFileRows,
   getNestedFindingRows,
+  getPackageRows,
   summarizeResult,
 } from '@/helpers/scan-result'
 
@@ -23,6 +24,7 @@ type ScanResultViewerProps = {
 }
 
 export function ScanResultViewer({ result }: ScanResultViewerProps) {
+  const packageRows = useMemo(() => getPackageRows(result), [result])
   const fileRows = useMemo(() => getFileRows(result), [result])
   const emailRows = useMemo(
     () => getNestedFindingRows(result, 'emails', 'email'),
@@ -71,6 +73,7 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
           summary={summary}
           emailRows={emailRows}
           fileRows={fileRows}
+          packageRows={packageRows}
           urlRows={urlRows}
         />
 

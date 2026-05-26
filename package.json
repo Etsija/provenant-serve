@@ -22,6 +22,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "idb-keyval": "^6.2.4",
+    "license-expressions": "^0.8.0",
     "lucide-react": "^1.16.0",
     "radix-ui": "^1.4.3",
     "react": "latest",
