@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { JobStatus } from '@/components/JobStatus'
 import { Label } from '@/components/ui/label'
 
 type ScanOptionKey =
@@ -68,13 +67,20 @@ const optionLabels: Array<{
   },
 ]
 
-export function ScanForm() {
+type ScanFormProps = {
+  onJobAccepted?: (jobId: string) => void
+}
+
+export function ScanForm({ onJobAccepted }: ScanFormProps) {
   const [repositoryUrl, setRepositoryUrl] = useState('')
   const [repositoryRef, setRepositoryRef] = useState('main')
   const [options, setOptions] = useState<ScanOptionState>(defaultOptions)
 
   const scanMutation = useMutation({
     mutationFn: submitAsyncScan,
+    onSuccess: (data) => {
+      onJobAccepted?.(data.job_id)
+    },
   })
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -188,16 +194,12 @@ export function ScanForm() {
         ) : null}
 
         {scanMutation.data ? (
-          <div className="mt-6 space-y-6">
-            <Alert>
-              <AlertTitle>Scan accepted</AlertTitle>
-              <AlertDescription>
-                Job <code>{scanMutation.data.job_id}</code> was accepted.
-              </AlertDescription>
-            </Alert>
-
-            <JobStatus jobId={scanMutation.data.job_id} />
-          </div>
+          <Alert className="mt-6">
+            <AlertTitle>Scan accepted</AlertTitle>
+            <AlertDescription>
+              Job <code>{scanMutation.data.job_id}</code> was accepted.
+            </AlertDescription>
+          </Alert>
         ) : null}
       </CardContent>
     </Card>

@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react'
+import { useEffect } from 'react'
 
 import { getJob, getJobResult } from '@/api/provenantApi'
-import { ScanResultViewer } from '@/components/ScanResultViewer'
+import type { ScanResult } from '@/api/types'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -15,11 +16,12 @@ import {
 
 type JobStatusProps = {
   jobId: string
+  onResultFetched?: (result: ScanResult) => void
 }
 
 const terminalStates = new Set(['succeeded', 'failed'])
 
-export function JobStatus({ jobId }: JobStatusProps) {
+export function JobStatus({ jobId, onResultFetched }: JobStatusProps) {
   const jobQuery = useQuery({
     queryKey: ['provenant', 'job', jobId],
     queryFn: () => getJob(jobId),
@@ -38,6 +40,12 @@ export function JobStatus({ jobId }: JobStatusProps) {
 
   const state = jobQuery.data?.state ?? 'loading'
   const resultReady = jobQuery.data?.result_ready ?? false
+
+  useEffect(() => {
+    if (resultQuery.data) {
+      onResultFetched?.(resultQuery.data)
+    }
+  }, [onResultFetched, resultQuery.data])
 
   return (
     <Card>
@@ -110,17 +118,13 @@ export function JobStatus({ jobId }: JobStatusProps) {
         ) : null}
 
         {resultQuery.data ? (
-          <div className="space-y-4">
-            <Alert>
-              <CheckCircle2 className="size-4" aria-hidden="true" />
-              <AlertTitle>Result fetched</AlertTitle>
-              <AlertDescription>
-                The scan result is available below.
-              </AlertDescription>
-            </Alert>
-
-            <ScanResultViewer result={resultQuery.data} />
-          </div>
+          <Alert>
+            <CheckCircle2 className="size-4" aria-hidden="true" />
+            <AlertTitle>Result fetched</AlertTitle>
+            <AlertDescription>
+              The scan result is available below.
+            </AlertDescription>
+          </Alert>
         ) : null}
       </CardContent>
     </Card>
