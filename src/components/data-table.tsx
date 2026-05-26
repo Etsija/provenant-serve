@@ -57,7 +57,12 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-3">
       <div className="overflow-hidden rounded-md border">
-        <Table>
+        <Table className="table-fixed">
+          <colgroup>
+            {table.getVisibleLeafColumns().map((column) => (
+              <col key={column.id} style={{ width: `${column.getSize()}%` }} />
+            ))}
+          </colgroup>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -81,7 +86,7 @@ export function DataTable<TData, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="text-xs text-muted-foreground"
+                      className="max-w-0 whitespace-normal text-xs text-muted-foreground"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

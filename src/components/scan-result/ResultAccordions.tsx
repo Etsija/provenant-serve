@@ -6,12 +6,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { FileTable } from '@/components/scan-result/FileTable'
 import { FindingTable } from '@/components/scan-result/FindingTable'
-import type { ResultSummary, ScanFindingRow } from '@/helpers/scan-result'
+import type {
+  ResultSummary,
+  ScanFileRow,
+  ScanFindingRow,
+} from '@/helpers/scan-result'
 
 type ResultAccordionsProps = {
   summary: ResultSummary
   emailRows: ScanFindingRow[]
+  fileRows: ScanFileRow[]
   urlRows: ScanFindingRow[]
 }
 
@@ -25,6 +31,7 @@ type ResultAccordion = {
 export function ResultAccordions({
   summary,
   emailRows,
+  fileRows,
   urlRows,
 }: ResultAccordionsProps) {
   const accordions = getResultAccordions(summary)
@@ -49,7 +56,9 @@ export function ResultAccordions({
             </span>
           </AccordionTrigger>
           <AccordionContent>
-            {accordion.key === 'urls' ? (
+            {accordion.key === 'files' ? (
+              <FileTable rows={fileRows} />
+            ) : accordion.key === 'urls' ? (
               <FindingTable label="URL" rows={urlRows} />
             ) : accordion.key === 'emails' ? (
               <FindingTable label="Email" rows={emailRows} />
