@@ -12,13 +12,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { getNestedFindingRows, summarizeResult } from '@/helpers/scan-result'
+import {
+  getFileRows,
+  getNestedFindingRows,
+  summarizeResult,
+} from '@/helpers/scan-result'
 
 type ScanResultViewerProps = {
   result: ScanResult
 }
 
 export function ScanResultViewer({ result }: ScanResultViewerProps) {
+  const fileRows = useMemo(() => getFileRows(result), [result])
   const emailRows = useMemo(
     () => getNestedFindingRows(result, 'emails', 'email'),
     [result],
@@ -65,6 +70,7 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
         <ResultAccordions
           summary={summary}
           emailRows={emailRows}
+          fileRows={fileRows}
           urlRows={urlRows}
         />
 

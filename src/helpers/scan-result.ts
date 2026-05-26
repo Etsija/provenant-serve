@@ -18,6 +18,11 @@ export type ScanFindingRow = {
   lines: string
 }
 
+export type ScanFileRow = {
+  file: string
+  sha1: string
+}
+
 export function summarizeResult(result: ScanResult): ResultSummary {
   const files = getArray(result, 'files')
   const packages = getArray(result, 'packages')
@@ -36,6 +41,34 @@ export function summarizeResult(result: ScanResult): ResultSummary {
     endTime: formatLocalTime(endDate),
     duration: formatDuration(getDurationSeconds(header, startDate, endDate)),
   }
+}
+
+export function getFileRows(result: ScanResult): ScanFileRow[] {
+  const files = getArray(result, 'files')
+
+  if (!files) {
+    return []
+  }
+
+  return files.flatMap((file) => {
+    if (!file || typeof file !== 'object') {
+      return []
+    }
+
+    const fileRecord = file as Record<string, unknown>
+    const path = getString(fileRecord, 'path')
+
+    if (!path) {
+      return []
+    }
+
+    return [
+      {
+        file: path,
+        sha1: getString(fileRecord, 'sha1') ?? 'Unknown',
+      },
+    ]
+  })
 }
 
 export function getNestedFindingRows(

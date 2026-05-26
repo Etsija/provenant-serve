@@ -18,6 +18,7 @@ function createFindingColumns(
   return [
     {
       accessorKey: 'value',
+      size: 45,
       header: ({ column }) => (
         <DataTableSortableHeader column={column} title={label} />
       ),
@@ -29,6 +30,7 @@ function createFindingColumns(
     },
     {
       accessorKey: 'file',
+      size: 45,
       header: ({ column }) => (
         <DataTableSortableHeader column={column} title="File" />
       ),
@@ -38,6 +40,7 @@ function createFindingColumns(
     },
     {
       accessorKey: 'lines',
+      size: 10,
       header: 'Lines',
     },
   ]
