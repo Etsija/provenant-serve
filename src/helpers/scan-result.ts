@@ -23,6 +23,19 @@ export type ScanFileRow = {
   sha1: string
 }
 
+export type ScanPackageRow = {
+  id: string
+  sourceFile: string
+  type: string
+  name: string
+  version: string
+  namespace: string
+  purl: string
+  declaredLicense: string
+  description: string
+  dependenciesCount: number
+}
+
 export function summarizeResult(result: ScanResult): ResultSummary {
   const files = getArray(result, 'files')
   const packages = getArray(result, 'packages')
@@ -41,6 +54,36 @@ export function summarizeResult(result: ScanResult): ResultSummary {
     endTime: formatLocalTime(endDate),
     duration: formatDuration(getDurationSeconds(header, startDate, endDate)),
   }
+}
+
+export function getPackageRows(result: ScanResult): ScanPackageRow[] {
+  const topLevelPackages = getArray(result, 'packages')
+  const packageRows = topLevelPackages
+    ? topLevelPackages.flatMap((packageRecord, index) =>
+        buildPackageRow(packageRecord, 'Top-level package', index),
+      )
+    : []
+
+  const files = getArray(result, 'files')
+  if (!files) {
+    return packageRows
+  }
+
+  for (const file of files) {
+    if (!file || typeof file !== 'object') {
+      continue
+    }
+
+    const fileRecord = file as Record<string, unknown>
+    const sourceFile = getString(fileRecord, 'path') ?? 'Unknown'
+    const packageData = getArray(fileRecord, 'package_data')
+
+    for (const [index, packageRecord] of (packageData ?? []).entries()) {
+      packageRows.push(...buildPackageRow(packageRecord, sourceFile, index))
+    }
+  }
+
+  return packageRows
 }
 
 export function getFileRows(result: ScanResult): ScanFileRow[] {
@@ -119,6 +162,37 @@ export function getNestedFindingRows(
       ]
     })
   })
+}
+
+function buildPackageRow(
+  packageRecord: unknown,
+  sourceFile: string,
+  index: number,
+): ScanPackageRow[] {
+  if (!packageRecord || typeof packageRecord !== 'object') {
+    return []
+  }
+
+  const record = packageRecord as Record<string, unknown>
+  const dependencies = getArray(record, 'dependencies')
+
+  return [
+    {
+      id: `${sourceFile}:${index}:${getString(record, 'purl') ?? getString(record, 'name') ?? 'package'}`,
+      sourceFile,
+      type: getString(record, 'type') ?? 'Unknown',
+      name: getString(record, 'name') ?? 'Unknown',
+      version: getString(record, 'version') ?? 'Unknown',
+      namespace: getString(record, 'namespace') ?? 'Unknown',
+      purl: getString(record, 'purl') ?? 'Unknown',
+      declaredLicense:
+        getString(record, 'declared_license_expression') ??
+        getString(record, 'declared_license') ??
+        'Unknown',
+      description: getString(record, 'description') ?? 'Unknown',
+      dependenciesCount: dependencies?.length ?? 0,
+    },
+  ]
 }
 
 function countNestedFileItems(
