@@ -11,7 +11,7 @@ export function LicenseBadge({ license }: LicenseBadgeProps) {
   return (
     <Badge
       variant="outline"
-      className="max-w-full align-middle rounded-md"
+      className="max-w-full rounded-md align-middle"
       style={{
         backgroundColor: colors.backgroundColor,
         borderColor: colors.borderColor,

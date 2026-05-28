@@ -14,8 +14,8 @@ export function SummaryTile({
   valueClassName,
 }: SummaryTileProps) {
   return (
-    <div className="rounded-lg border bg-background p-3">
-      <p className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+    <div className="bg-background rounded-lg border p-3">
+      <p className="text-muted-foreground mb-2 flex items-center gap-2 text-sm font-medium">
         {icon}
         {label}
       </p>

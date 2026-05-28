@@ -51,11 +51,11 @@ function PackageCard({ row }: { row: ScanPackageRow }) {
     <article className="space-y-1 text-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1">
-          <h4 className="flex items-center gap-2 font-semibold text-foreground">
+          <h4 className="text-foreground flex items-center gap-2 font-semibold">
             <Package className="size-4 shrink-0" aria-hidden="true" />
             <span className="break-all">{row.name}</span>
           </h4>
-          <code className="block break-all text-xs text-muted-foreground">
+          <code className="text-muted-foreground block text-xs break-all">
             {row.purl}
           </code>
         </div>
@@ -70,13 +70,13 @@ function PackageCard({ row }: { row: ScanPackageRow }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className="text-muted-foreground flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
-          <span className="font-medium text-foreground">Source: </span>
+          <span className="text-foreground font-medium">Source: </span>
           <code className="break-all">{row.sourceFile}</code>
         </div>
         <div className="min-w-0 shrink-0 sm:text-right">
-          <span className="font-medium text-foreground">
+          <span className="text-foreground font-medium">
             Declared license:{' '}
           </span>
           <LicenseBadge license={row.declaredLicense} />
@@ -84,7 +84,7 @@ function PackageCard({ row }: { row: ScanPackageRow }) {
       </div>
 
       {row.description !== 'Unknown' ? (
-        <p className="line-clamp-2 text-xs leading-5 text-muted-foreground">
+        <p className="text-muted-foreground line-clamp-2 text-xs leading-5">
           {row.description}
         </p>
       ) : null}

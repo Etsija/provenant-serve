@@ -15,7 +15,7 @@ const fileColumns: ColumnDef<ScanFileRow>[] = [
       <DataTableSortableHeader column={column} title="File" />
     ),
     cell: ({ row }) => (
-      <code className="block min-w-0 whitespace-normal break-all">
+      <code className="block min-w-0 break-all whitespace-normal">
         {row.original.file}
       </code>
     ),
@@ -25,7 +25,7 @@ const fileColumns: ColumnDef<ScanFileRow>[] = [
     size: 30,
     header: 'SHA1',
     cell: ({ row }) => (
-      <code className="block min-w-0 whitespace-normal break-all">
+      <code className="block min-w-0 break-all whitespace-normal">
         {row.original.sha1}
       </code>
     ),

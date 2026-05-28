@@ -173,7 +173,7 @@ export function ScanForm({ onJobAccepted }: ScanFormProps) {
               {optionLabels.map((option) => (
                 <Label
                   key={option.key}
-                  className="items-start gap-3 rounded-lg border bg-background p-3"
+                  className="bg-background items-start gap-3 rounded-lg border p-3"
                 >
                   <Checkbox
                     checked={options[option.key]}
@@ -183,7 +183,7 @@ export function ScanForm({ onJobAccepted }: ScanFormProps) {
                   />
                   <span className="grid gap-1">
                     <span>{option.label}</span>
-                    <span className="text-sm leading-5 font-normal text-muted-foreground">
+                    <span className="text-muted-foreground text-sm leading-5 font-normal">
                       {option.description}
                     </span>
                   </span>

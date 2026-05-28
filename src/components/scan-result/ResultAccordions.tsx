@@ -1,14 +1,14 @@
 import { Copyright, FileJson, Link, Mail, Package, Scale } from 'lucide-react'
 
+import { FileTable } from '@/components/scan-result/FileTable'
+import { FindingTable } from '@/components/scan-result/FindingTable'
+import PackageCards from '@/components/scan-result/PackageCards'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { FileTable } from '@/components/scan-result/FileTable'
-import { FindingTable } from '@/components/scan-result/FindingTable'
-import PackageCards from '@/components/scan-result/PackageCards'
 import type {
   ResultSummary,
   ScanFileRow,
@@ -50,7 +50,7 @@ export function ResultAccordions({
         <AccordionItem
           key={accordion.key}
           value={accordion.key}
-          className="rounded-lg border bg-background px-4"
+          className="bg-background rounded-lg border px-4"
         >
           <AccordionTrigger className="py-4 hover:no-underline">
             <span className="flex w-full items-center gap-3 pr-4">
