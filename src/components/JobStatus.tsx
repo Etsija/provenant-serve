@@ -153,8 +153,8 @@ function StatusTile({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-lg border bg-background p-3">
-      <p className="mb-2 text-sm font-medium text-muted-foreground">{label}</p>
+    <div className="bg-background rounded-lg border p-3">
+      <p className="text-muted-foreground mb-2 text-sm font-medium">{label}</p>
       {children}
     </div>
   )

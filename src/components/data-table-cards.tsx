@@ -1,20 +1,20 @@
 import {
-  type Column,
-  type ColumnDef,
-  type SortingState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type Column,
+  type ColumnDef,
+  type SortingState,
 } from '@tanstack/react-table'
 import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   ChevronsLeft,
   ChevronsRight,
   ChevronsUpDown,
+  ChevronUp,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -69,20 +69,20 @@ export function DataTableCards<TData, TValue>({
       {rows.length > 0 ? (
         <div className="grid gap-3">
           {rows.map((row) => (
-            <div key={row.id} className="rounded-lg border bg-card p-4">
+            <div key={row.id} className="bg-card rounded-lg border p-4">
               {renderCard(row.original)}
             </div>
           ))}
         </div>
       ) : (
-        <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
+        <div className="bg-card text-muted-foreground rounded-lg border p-8 text-center text-sm">
           {emptyMessage}
         </div>
       )}
 
       {rows.length > 0 ? (
         <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Page {table.getState().pagination.pageIndex + 1} of{' '}
             {table.getPageCount() || 1}
           </p>
@@ -168,9 +168,9 @@ function DataTableCardsSort<TData>({
                 onClick={() => column.toggleSorting(sorting === 'asc')}
               >
                 {sorting === 'asc' ? (
-                  <ChevronUp className="mr-2 size-4 text-primary" />
+                  <ChevronUp className="text-primary mr-2 size-4" />
                 ) : sorting === 'desc' ? (
-                  <ChevronDown className="mr-2 size-4 text-primary" />
+                  <ChevronDown className="text-primary mr-2 size-4" />
                 ) : (
                   <ChevronsUpDown className="mr-2 size-4" />
                 )}

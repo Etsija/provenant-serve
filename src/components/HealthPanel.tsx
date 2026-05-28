@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { indicatorColors, getServiceStatusTone } from '@/lib/colors'
+import { getServiceStatusTone, indicatorColors } from '@/lib/colors'
 
 type ServiceCheck = {
   label: string
@@ -92,10 +92,10 @@ export function HealthPanel() {
           {checks.map((check) => (
             <div
               key={check.label}
-              className="rounded-lg border bg-background p-3"
+              className="bg-background rounded-lg border p-3"
             >
               <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="text-sm font-medium text-muted-foreground">
+                <span className="text-muted-foreground text-sm font-medium">
                   {check.label}
                 </span>
                 <StatusBadge status={check.status} />

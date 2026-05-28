@@ -77,14 +77,14 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
           urlRows={urlRows}
         />
 
-        <details className="group rounded-lg border bg-background">
+        <details className="group bg-background rounded-lg border">
           <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium select-none">
             <span className="inline-flex items-center gap-2">
               Raw JSON
               <Badge variant="secondary">expand</Badge>
             </span>
           </summary>
-          <pre className="max-h-[36rem] overflow-auto border-t bg-muted/40 p-4 text-xs leading-5">
+          <pre className="bg-muted/40 max-h-[36rem] overflow-auto border-t p-4 text-xs leading-5">
             <code>{JSON.stringify(result, null, 2)}</code>
           </pre>
         </details>

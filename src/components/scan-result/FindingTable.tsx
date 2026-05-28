@@ -23,7 +23,7 @@ function createFindingColumns(
         <DataTableSortableHeader column={column} title={label} />
       ),
       cell: ({ row }) => (
-        <code className="whitespace-normal break-all">
+        <code className="break-all whitespace-normal">
           {row.original.value}
         </code>
       ),
@@ -35,7 +35,7 @@ function createFindingColumns(
         <DataTableSortableHeader column={column} title="File" />
       ),
       cell: ({ row }) => (
-        <code className="whitespace-normal break-all">{row.original.file}</code>
+        <code className="break-all whitespace-normal">{row.original.file}</code>
       ),
     },
     {

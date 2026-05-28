@@ -1,21 +1,21 @@
 import {
-  type Column,
-  type ColumnDef,
-  type SortingState,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type Column,
+  type ColumnDef,
+  type SortingState,
 } from '@tanstack/react-table'
 import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   ChevronsLeft,
   ChevronsRight,
   ChevronsUpDown,
+  ChevronUp,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -86,7 +86,7 @@ export function DataTable<TData, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="max-w-0 whitespace-normal text-xs text-muted-foreground"
+                      className="text-muted-foreground max-w-0 text-xs whitespace-normal"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -110,7 +110,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Page {table.getState().pagination.pageIndex + 1} of{' '}
           {table.getPageCount() || 1}
         </p>
