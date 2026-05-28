@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
+  getCopyrightRows,
   getFileRows,
   getNestedFindingRows,
   getPackageRows,
@@ -25,6 +26,7 @@ type ScanResultViewerProps = {
 
 export function ScanResultViewer({ result }: ScanResultViewerProps) {
   const packageRows = useMemo(() => getPackageRows(result), [result])
+  const copyrightRows = useMemo(() => getCopyrightRows(result), [result])
   const fileRows = useMemo(() => getFileRows(result), [result])
   const emailRows = useMemo(
     () => getNestedFindingRows(result, 'emails', 'email'),
@@ -71,6 +73,7 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
 
         <ResultAccordions
           summary={summary}
+          copyrightRows={copyrightRows}
           emailRows={emailRows}
           fileRows={fileRows}
           packageRows={packageRows}

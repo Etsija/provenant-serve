@@ -36,6 +36,16 @@ export type ScanPackageRow = {
   dependenciesCount: number
 }
 
+export type ScanCopyrightRow = {
+  id: string
+  statement: string
+  file: string
+  lines: string
+  holders: string[]
+  authors: string[]
+  years: string[]
+}
+
 export function summarizeResult(result: ScanResult): ResultSummary {
   const files = getArray(result, 'files')
   const packages = getArray(result, 'packages')
@@ -84,6 +94,59 @@ export function getPackageRows(result: ScanResult): ScanPackageRow[] {
   }
 
   return packageRows
+}
+
+export function getCopyrightRows(result: ScanResult): ScanCopyrightRow[] {
+  const files = getArray(result, 'files')
+
+  if (!files) {
+    return []
+  }
+
+  return files.flatMap((file) => {
+    if (!file || typeof file !== 'object') {
+      return []
+    }
+
+    const fileRecord = file as Record<string, unknown>
+    const path = getString(fileRecord, 'path') ?? 'Unknown'
+    const copyrights = getArray(fileRecord, 'copyrights')
+
+    if (!copyrights) {
+      return []
+    }
+
+    return copyrights.flatMap((copyright, index) => {
+      if (!copyright || typeof copyright !== 'object') {
+        return []
+      }
+
+      const copyrightRecord = copyright as Record<string, unknown>
+      const statement =
+        getString(copyrightRecord, 'copyright') ??
+        getString(copyrightRecord, 'statement') ??
+        getString(copyrightRecord, 'value')
+
+      if (!statement) {
+        return []
+      }
+
+      return [
+        {
+          id: `${path}:${index}:${statement}`,
+          statement,
+          file: path,
+          lines: formatLineRange(
+            getNumber(copyrightRecord, 'start_line'),
+            getNumber(copyrightRecord, 'end_line'),
+          ),
+          holders: getStringArray(copyrightRecord, 'holders'),
+          authors: getStringArray(copyrightRecord, 'authors'),
+          years: getStringArray(copyrightRecord, 'years'),
+        },
+      ]
+    })
+  })
 }
 
 export function getFileRows(result: ScanResult): ScanFileRow[] {
@@ -380,4 +443,17 @@ function getNumber(
 function getArray(record: Record<string, unknown>, key: string) {
   const value = record[key]
   return Array.isArray(value) ? value : undefined
+}
+
+function getStringArray(
+  record: Record<string, unknown>,
+  key: string,
+): string[] {
+  const value = getArray(record, key)
+
+  if (!value) {
+    return []
+  }
+
+  return value.flatMap((item) => (typeof item === 'string' ? [item] : []))
 }
