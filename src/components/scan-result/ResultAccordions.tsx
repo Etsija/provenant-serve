@@ -3,6 +3,7 @@ import { Copyright, FileJson, Link, Mail, Package, Scale } from 'lucide-react'
 import CopyrightCards from '@/components/scan-result/CopyrightCards'
 import { FileTable } from '@/components/scan-result/FileTable'
 import { FindingTable } from '@/components/scan-result/FindingTable'
+import LicenseCards from '@/components/scan-result/LicenseCards'
 import PackageCards from '@/components/scan-result/PackageCards'
 import {
   Accordion,
@@ -15,6 +16,7 @@ import type {
   ScanCopyrightRow,
   ScanFileRow,
   ScanFindingRow,
+  ScanLicenseRow,
   ScanPackageRow,
 } from '@/helpers/scan-result'
 
@@ -23,6 +25,7 @@ type ResultAccordionsProps = {
   copyrightRows: ScanCopyrightRow[]
   emailRows: ScanFindingRow[]
   fileRows: ScanFileRow[]
+  licenseRows: ScanLicenseRow[]
   packageRows: ScanPackageRow[]
   urlRows: ScanFindingRow[]
 }
@@ -39,6 +42,7 @@ export function ResultAccordions({
   copyrightRows,
   emailRows,
   fileRows,
+  licenseRows,
   packageRows,
   urlRows,
 }: ResultAccordionsProps) {
@@ -68,6 +72,8 @@ export function ResultAccordions({
               <PackageCards rows={packageRows} />
             ) : accordion.key === 'files' ? (
               <FileTable rows={fileRows} />
+            ) : accordion.key === 'licenses' ? (
+              <LicenseCards rows={licenseRows} />
             ) : accordion.key === 'copyrights' ? (
               <CopyrightCards rows={copyrightRows} />
             ) : accordion.key === 'urls' ? (

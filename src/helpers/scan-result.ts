@@ -46,6 +46,19 @@ export type ScanCopyrightRow = {
   years: string[]
 }
 
+export type ScanLicenseRow = {
+  id: string
+  expression: string
+  file: string
+  lines: string
+  score?: number
+  licenseKeys: string[]
+  category: string
+  rule: string
+  matchedText: string
+  source: string
+}
+
 export function summarizeResult(result: ScanResult): ResultSummary {
   const files = getArray(result, 'files')
   const packages = getArray(result, 'packages')
@@ -149,6 +162,51 @@ export function getCopyrightRows(result: ScanResult): ScanCopyrightRow[] {
   })
 }
 
+export function getLicenseRows(result: ScanResult): ScanLicenseRow[] {
+  const files = getArray(result, 'files')
+
+  if (!files) {
+    return []
+  }
+
+  return files.flatMap((file) => {
+    if (!file || typeof file !== 'object') {
+      return []
+    }
+
+    const fileRecord = file as Record<string, unknown>
+    const path = getString(fileRecord, 'path') ?? 'Unknown'
+    const detectionRows = getLicenseDetectionRows(fileRecord, path)
+    const matchRows = getLicenseMatchRows(fileRecord, path)
+
+    if (detectionRows.length > 0 || matchRows.length > 0) {
+      return [...detectionRows, ...matchRows]
+    }
+
+    const expression =
+      getString(fileRecord, 'detected_license_expression_spdx') ??
+      getString(fileRecord, 'license_expression_spdx')
+
+    if (!expression || expression === 'unknown') {
+      return []
+    }
+
+    return [
+      {
+        id: `${path}:file:${expression}`,
+        expression,
+        file: path,
+        lines: 'Unknown',
+        licenseKeys: [],
+        category: 'Unknown',
+        rule: 'Unknown',
+        matchedText: 'Unknown',
+        source: 'File summary',
+      },
+    ]
+  })
+}
+
 export function getFileRows(result: ScanResult): ScanFileRow[] {
   const files = getArray(result, 'files')
 
@@ -225,6 +283,120 @@ export function getNestedFindingRows(
       ]
     })
   })
+}
+
+function getLicenseDetectionRows(
+  fileRecord: Record<string, unknown>,
+  path: string,
+): ScanLicenseRow[] {
+  const detections = getArray(fileRecord, 'license_detections')
+
+  if (!detections) {
+    return []
+  }
+
+  return detections.flatMap((detection, index) => {
+    if (!detection || typeof detection !== 'object') {
+      return []
+    }
+
+    const detectionRecord = detection as Record<string, unknown>
+    const expression =
+      getString(detectionRecord, 'license_expression_spdx') ??
+      getString(detectionRecord, 'detected_license_expression_spdx')
+
+    if (!expression || expression === 'unknown') {
+      return []
+    }
+
+    const matches = getArray(detectionRecord, 'matches')
+    const firstMatch = getFirstObject(matches)
+
+    return [
+      {
+        id: `${path}:detection:${index}:${expression}`,
+        expression,
+        file: path,
+        lines: formatLineRange(
+          getNumber(firstMatch, 'start_line'),
+          getNumber(firstMatch, 'end_line'),
+        ),
+        score: getNumber(firstMatch, 'score'),
+        licenseKeys: getLicenseKeys(detectionRecord, firstMatch),
+        category: getString(firstMatch, 'category') ?? 'Unknown',
+        rule: getString(firstMatch, 'rule_identifier') ?? 'Unknown',
+        matchedText: getString(firstMatch, 'matched_text') ?? 'Unknown',
+        source: 'License detection',
+      },
+    ]
+  })
+}
+
+function getLicenseMatchRows(
+  fileRecord: Record<string, unknown>,
+  path: string,
+): ScanLicenseRow[] {
+  const matches = getArray(fileRecord, 'license_matches')
+
+  if (!matches) {
+    return []
+  }
+
+  return matches.flatMap((match, index) => {
+    if (!match || typeof match !== 'object') {
+      return []
+    }
+
+    const matchRecord = match as Record<string, unknown>
+    const expression =
+      getString(matchRecord, 'license_expression_spdx') ??
+      getString(matchRecord, 'detected_license_expression_spdx')
+
+    if (!expression || expression === 'unknown') {
+      return []
+    }
+
+    return [
+      {
+        id: `${path}:match:${index}:${expression}`,
+        expression,
+        file: path,
+        lines: formatLineRange(
+          getNumber(matchRecord, 'start_line'),
+          getNumber(matchRecord, 'end_line'),
+        ),
+        score: getNumber(matchRecord, 'score'),
+        licenseKeys: getLicenseKeys(matchRecord),
+        category: getString(matchRecord, 'category') ?? 'Unknown',
+        rule: getString(matchRecord, 'rule_identifier') ?? 'Unknown',
+        matchedText: getString(matchRecord, 'matched_text') ?? 'Unknown',
+        source: 'License match',
+      },
+    ]
+  })
+}
+
+function getLicenseKeys(
+  ...records: Array<Record<string, unknown> | undefined>
+): string[] {
+  const keys = new Set<string>()
+
+  for (const record of records) {
+    if (!record) {
+      continue
+    }
+
+    for (const key of getStringArray(record, 'license_keys')) {
+      keys.add(key)
+    }
+
+    const licenseKey = getString(record, 'license_key')
+    if (licenseKey) {
+      keys.add(licenseKey)
+    }
+  }
+
+  return [...keys]
 }
 
 function buildPackageRow(
@@ -320,6 +492,13 @@ function addLicenseExpression(licenseKeys: Set<string>, value: unknown) {
   if (typeof value === 'string' && value.length > 0 && value !== 'unknown') {
     licenseKeys.add(value)
   }
+}
+
+function getFirstObject(items: unknown[] | undefined) {
+  const item = items?.[0]
+  return item && typeof item === 'object'
+    ? (item as Record<string, unknown>)
+    : undefined
 }
 
 function getFirstHeader(result: ScanResult) {

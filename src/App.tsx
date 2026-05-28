@@ -1,7 +1,7 @@
 import { HealthPanel } from '@/components/HealthPanel'
 import { JobStatus } from '@/components/JobStatus'
 import { ScanForm } from '@/components/ScanForm'
-import { ScanResultViewer } from '@/components/ScanResultViewer'
+import ScanResultViewer from '@/components/ScanResultViewer'
 import { useScanStore } from '@/stores/scan-store'
 
 export function App() {
