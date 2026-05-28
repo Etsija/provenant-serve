@@ -15,6 +15,7 @@ import {
 import {
   getCopyrightRows,
   getFileRows,
+  getLicenseRows,
   getNestedFindingRows,
   getPackageRows,
   summarizeResult,
@@ -24,10 +25,11 @@ type ScanResultViewerProps = {
   result: ScanResult
 }
 
-export function ScanResultViewer({ result }: ScanResultViewerProps) {
+function ScanResultViewer({ result }: ScanResultViewerProps) {
   const packageRows = useMemo(() => getPackageRows(result), [result])
   const copyrightRows = useMemo(() => getCopyrightRows(result), [result])
   const fileRows = useMemo(() => getFileRows(result), [result])
+  const licenseRows = useMemo(() => getLicenseRows(result), [result])
   const emailRows = useMemo(
     () => getNestedFindingRows(result, 'emails', 'email'),
     [result],
@@ -76,6 +78,7 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
           copyrightRows={copyrightRows}
           emailRows={emailRows}
           fileRows={fileRows}
+          licenseRows={licenseRows}
           packageRows={packageRows}
           urlRows={urlRows}
         />
@@ -95,3 +98,6 @@ export function ScanResultViewer({ result }: ScanResultViewerProps) {
     </Card>
   )
 }
+
+export { ScanResultViewer }
+export default ScanResultViewer

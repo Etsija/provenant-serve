@@ -7,6 +7,7 @@ type LicenseBadgeProps = {
 
 export function LicenseBadge({ license }: LicenseBadgeProps) {
   const colors = getLicenseBadgeColors(license)
+  const displayLicense = license.toUpperCase()
 
   return (
     <Badge
@@ -18,7 +19,7 @@ export function LicenseBadge({ license }: LicenseBadgeProps) {
         color: colors.color,
       }}
     >
-      <span className="break-all">{license}</span>
+      <span className="break-all">{displayLicense}</span>
     </Badge>
   )
 }
